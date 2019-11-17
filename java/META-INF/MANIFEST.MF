@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Specification-Title: N.A.
+Created-By: Jürgen Reuter
+Implementation-Title: Respektomat
+Specification-Vendor: Juergen Reuter
+Implementation-Vendor: Juergen Reuter
+Main-Class: org.soundpaint.respektomat.Respektomat
