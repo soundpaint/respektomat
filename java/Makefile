@@ -46,7 +46,7 @@ depend:
 tags:
 	etags *.java
 
-run:
+run: all
 	cd $(BUILD_DIR) ; java -jar $(JAR_OBJ)
 
 objclean:

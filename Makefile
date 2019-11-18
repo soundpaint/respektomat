@@ -28,7 +28,7 @@ all:
 	cd data ; make all
 	cd java ; make all
 
-run:
+run: all
 	cd java ; make run
 
 objclean:
