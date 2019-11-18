@@ -147,16 +147,16 @@ public class Token implements Comparable<Token>
   @Override
   public int compareTo(final Token other)
   {
-    final int thisType = getType().ordinal();
-    final int otherType = other.getType().ordinal();
-    if (thisType < otherType) {
+    final int thisTypeOrd = type.ordinal();
+    final int otherTypeOrd = other.type.ordinal();
+    if (thisTypeOrd < otherTypeOrd) {
       return -1;
-    } else if (thisType > otherType) {
+    } else if (thisTypeOrd > otherTypeOrd) {
       return 1;
-    } else if (getType() != Type.WORD) {
+    } else if (type != Type.WORD) {
       return 0;
     } else {
-      return getValue().compareTo(other.getValue());
+      return value.compareTo(other.value);
     }
   }
 
@@ -168,6 +168,12 @@ public class Token implements Comparable<Token>
     }
     final Token other = (Token)obj;
     return compareTo(other) == 0;
+  }
+
+  @Override
+  public int hashCode()
+  {
+    return value.hashCode();
   }
 
   @Override
