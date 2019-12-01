@@ -26,6 +26,7 @@ public class Token implements Comparable<Token>
   public enum Type {
     EOF,
     APOSTROPHY,
+    ONE_DOT_LEADER,
     COMMA,
     SEMICOLON,
     COLON,
@@ -49,6 +50,8 @@ public class Token implements Comparable<Token>
     new Token(Type.APOSTROPHY, "’", false, false);
   public static final Token AMPERSAND =
     new Token(Type.APOSTROPHY, "&", true, true);
+  public static final Token ONE_DOT_LEADER =
+    new Token(Type.ONE_DOT_LEADER, "․", false, false);
   public static final Token COMMA =
     new Token(Type.COMMA, ",", false, true);
   public static final Token SEMICOLON =

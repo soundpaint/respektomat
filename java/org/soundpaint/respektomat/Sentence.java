@@ -24,19 +24,40 @@ import java.util.ArrayList;
 
 public class Sentence implements Comparable<Sentence>
 {
+  public enum Category
+  {
+    Normal,
+    NowWhat
+  };
+
   private static int idCount = 0;
 
-  private int id;
-  private List<Token> tokens;
+  private final Category category;
+  private final int id;
+  private final List<Token> tokens;
   private boolean sealed;
 
-  public static final Sentence EOF = new Sentence().seal();
+  public static final Sentence EOF = new Sentence(Category.Normal).seal();
 
-  public Sentence()
+  private Sentence()
   {
+    throw new UnsupportedOperationException("unsupported default constructor");
+  }
+
+  public Sentence(final Category category)
+  {
+    if (category == null) {
+      throw new NullPointerException("category");
+    }
+    this.category = category;
     id = idCount++;
     tokens = new ArrayList<Token>();
     sealed = false;
+  }
+
+  public Category getCategory()
+  {
+    return category;
   }
 
   public void addToken(final Token token)
@@ -77,6 +98,9 @@ public class Sentence implements Comparable<Sentence>
   private String toString(final boolean debug)
   {
     final StringBuffer sb = new StringBuffer();
+    if (debug) {
+      sb.append("[" + category + "] ");
+    }
     Token prevToken = null;
     for (final Token token : tokens) {
       if (prevToken != null) {

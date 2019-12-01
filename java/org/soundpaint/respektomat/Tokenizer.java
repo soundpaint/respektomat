@@ -254,8 +254,12 @@ public class Tokenizer
         }
         break;
       case IN_WORD:
-        if (ch == '’') {
-          // ignore
+        if (ch == '․') { // ONE_DOT_LEADER
+          wordText.append((char)ch);
+          // parseState keeps IN_WORD
+        } else if (ch == '’') { // APOSTROPHY
+          wordText.append((char)ch);
+          // parseState keeps IN_WORD
         } else if (isWordChar(ch)) {
           wordText.append((char)ch);
           // parseState keeps IN_WORD

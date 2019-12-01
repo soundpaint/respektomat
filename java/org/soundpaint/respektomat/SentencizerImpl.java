@@ -30,6 +30,7 @@ public class SentencizerImpl implements Sentencizer
   private final Tokenizer tokenizer;
   private final SentenceFilter sentenceFilter;
   private final Deque<Sentence> lookAhead;
+  private int count;
 
   private enum ParseState {
     START,
@@ -57,10 +58,14 @@ public class SentencizerImpl implements Sentencizer
     this.tokenizer = tokenizer;
     this.sentenceFilter = sentenceFilter;
     lookAhead = new ArrayDeque<Sentence>();
+    count = 0;
   }
 
-  private Sentence parseSentence() throws IOException, ParseException
+  private Sentence parseSentence()
+    throws IOException, ParseException
   {
+    final Sentence.Category category =
+      count++ < 2 ? Sentence.Category.NowWhat : Sentence.Category.Normal;
     ParseState parseState = ParseState.START;
     Sentence sentence = null;
     while ((parseState != ParseState.STOP) &&
@@ -72,11 +77,11 @@ public class SentencizerImpl implements Sentencizer
           sentence = Sentence.EOF;
           parseState = ParseState.EOF;
         } else if (token == Token.FULL_STOP) {
-          sentence = new Sentence();
+          sentence = new Sentence(category);
           sentence.addToken(token);
           parseState = ParseState.STOP;
         } else {
-          sentence = new Sentence();
+          sentence = new Sentence(category);
           sentence.addToken(token);
           parseState = ParseState.IN_SENTENCE;
         }

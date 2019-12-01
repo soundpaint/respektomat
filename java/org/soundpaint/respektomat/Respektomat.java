@@ -103,32 +103,38 @@ public class Respektomat
   }
 
   private double computeScore(final Sentence sentence,
-                              final Sentence incompleteSentence)
+                              final Sentence incompleteSentence,
+                              final Sentence.Category category)
   {
-    double score = 0;
-    for (final Token token : incompleteSentence.getTokens()) {
-      for (final Token indexedToken : index.getTokens()) {
-        final double tokenScore = token.matchScore(indexedToken);
-        if (tokenScore != 0.0) {
-          final IndexForToken indexForToken =
-            index.getIndexForToken(indexedToken);
-          final IndexForTokenInSentence indexForTokenInSentence =
-            indexForToken.getIndexForTokenInSentence(sentence);
-          if (indexForTokenInSentence != null) {
-            score += tokenScore * indexForTokenInSentence.count();
+    double score = 0.0;
+    if (incompleteSentence == null) {
+       score += (sentence.getCategory() == category) ? 1e5 : -1e5;
+    } else {
+      for (final Token token : incompleteSentence.getTokens()) {
+        for (final Token indexedToken : index.getTokens()) {
+          final double tokenScore = token.matchScore(indexedToken);
+          if (tokenScore != 0.0) {
+            final IndexForToken indexForToken =
+              index.getIndexForToken(indexedToken);
+            final IndexForTokenInSentence indexForTokenInSentence =
+              indexForToken.getIndexForTokenInSentence(sentence);
+            if (indexForTokenInSentence != null) {
+              score += tokenScore * indexForTokenInSentence.count();
+            }
           }
         }
       }
     }
-    score /*+*/= history.getScore(sentence);
+    score += history.getScore(sentence);
     return score;
   }
 
-  public Sentence suggestContinuation(final Sentence incompleteSentence)
+  public Sentence suggestContinuation(final Sentence incompleteSentence,
+                                      final Sentence.Category category)
   {
     final Map<Sentence, Double> scores = new TreeMap<Sentence, Double>();
     for (final Sentence sentence : sentences) {
-      final double score = computeScore(sentence, incompleteSentence);
+      final double score = computeScore(sentence, incompleteSentence, category);
       scores.put(sentence, score);
     }
     final List<Sentence> suggestedSentences = new ArrayList<Sentence>();
@@ -170,10 +176,16 @@ public class Respektomat
       if ("q".equalsIgnoreCase(unparsedSentence)) {
         break;
       }
-      final Sentence incompleteSentence =
-        SentencizerImpl.parseIncomplete(unparsedSentence);
-      final Sentence continuedSentence =
-        suggestContinuation(incompleteSentence);
+      Sentence continuedSentence;
+      try {
+        final Sentence incompleteSentence =
+          SentencizerImpl.parseIncomplete(unparsedSentence);
+        continuedSentence =
+          suggestContinuation(incompleteSentence, Sentence.Category.Normal);
+      } catch (final Throwable t) {
+        continuedSentence =
+          suggestContinuation(null, Sentence.Category.NowWhat);
+      }
       history.add(continuedSentence);
       System.out.println(ANSI_PC + Config.PC_PROMPT + "> " +
                          continuedSentence.prettyPrint() + ANSI_PLAIN);
