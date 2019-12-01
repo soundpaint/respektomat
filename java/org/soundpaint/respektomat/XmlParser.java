@@ -1,5 +1,5 @@
 /*
- * @(#)WikiXmlParser.java 1.00 19/11/19
+ * @(#)XmlParser.java 1.00 19/11/19
  *
  * Copyright (C) 2019 Jürgen Reuter
  *
@@ -19,10 +19,10 @@
 
 package org.soundpaint.respektomat;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
-import java.util.Stack;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -37,7 +37,7 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class WikiXmlParser
+public class XmlParser
 {
   private static final String KEY_LEXICAL_HANDLER =
     "http://xml.org/sax/properties/lexical-handler";
@@ -52,20 +52,42 @@ public class WikiXmlParser
                            final DefaultHandler handler)
     throws ParseException
   {
+    try {
+      final InputSource inputSource = new InputSource(xmlUrl.openStream());
+      parse(inputSource, schemaUrl, handler);
+    } catch (final IOException e) {
+      throw new ParseException("failed loading XML for validation", e);
+    }
+  }
+
+  public static void parse(final String xml, final URL schemaUrl,
+                           final DefaultHandler handler)
+    throws ParseException
+  {
+    final Reader reader = new StringReader(xml);
+    final InputSource inputSource = new InputSource(reader);
+    parse(inputSource, schemaUrl, handler);
+  }
+
+  public static void parse(final InputSource inputSource, final URL schemaUrl,
+                           final DefaultHandler handler)
+    throws ParseException
+  {
     final SAXParser parser = createParser(handler);
     try {
       if (schemaUrl != null) {
-        setSchema(xmlUrl, schemaUrl);
+        setSchema(inputSource, schemaUrl);
       } else {
         System.out.println("[using no schema]");
       }
-      parser.parse(xmlUrl.toString(), handler);
+      parser.parse(inputSource, handler);
     } catch (final SAXException | IOException e) {
       throw new ParseException("failed parsing XML input", e);
     }
   }
 
-  private static void setSchema(final URL xmlUrl, final URL schemaUrl)
+  private static void setSchema(final InputSource inputSource,
+                                final URL schemaUrl)
     throws ParseException
   {
     // TODO: Support for XSD 1.1
@@ -84,12 +106,6 @@ public class WikiXmlParser
     final XsdResourceResolver xsdResourceResolver =
       new XsdResourceResolver(schemaUrl);
     validator.setResourceResolver(xsdResourceResolver);
-    InputSource inputSource;
-    try {
-      inputSource = new InputSource(xmlUrl.openStream());
-    } catch (final IOException e) {
-      throw new ParseException("failed loading XML for validation", e);
-    }
     final SAXSource saxSource = new SAXSource(inputSource);
     try {
       validator.validate(saxSource);
@@ -117,7 +133,7 @@ public class WikiXmlParser
     return parser;
   }
 
-  private WikiXmlParser()
+  private XmlParser()
   {
     throw new UnsupportedOperationException("unsupported default constructor");
   }

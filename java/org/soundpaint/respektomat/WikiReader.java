@@ -24,7 +24,6 @@ import java.net.MalformedURLException;
 
 public class WikiReader
 {
-  private WikiXmlParser parser;
   private WikiReaderHandler handler;
 
   private WikiReader()
@@ -32,11 +31,12 @@ public class WikiReader
     throw new UnsupportedOperationException("unsupported default constructor");
   }
 
-  public WikiReader(final URL sourceUrl, final URL schemaUrl)
+  public WikiReader(final URL sourceUrl, final URL schemaUrl,
+                    final MarkDownParser markDownParser)
     throws ParseException
   {
-    handler = new WikiReaderHandler();
-    WikiXmlParser.parse(sourceUrl, schemaUrl, handler);
+    handler = new WikiReaderHandler(markDownParser);
+    XmlParser.parse(sourceUrl, schemaUrl, handler);
   }
 
   private static final String TEST_WIKI_URL =
@@ -49,7 +49,11 @@ public class WikiReader
     throws MalformedURLException, ParseException
   {
     final URL testWikiUrl = new URL(TEST_WIKI_URL);
-    final WikiReader reader = new WikiReader(testWikiUrl, null);
+    final Sentencizer sentencizer = new DummySentencizer();
+    final MarkDownHandler markDownHandler = new MarkDownHandler();
+    final MarkDownParser markDownParser =
+      new MarkDownParserImpl(sentencizer, markDownHandler);
+    final WikiReader reader = new WikiReader(testWikiUrl, null, markDownParser);
   }
 }
 

@@ -100,11 +100,11 @@ public class ParseException extends Exception
     }
     final Document document = location.getOwnerDocument();
     final Object inputSourceInfo =
-      document.getUserData(WikiXmlParser.KEY_XML_URL);
+      document.getUserData(XmlParser.KEY_XML_URL);
     final Object columnInfo =
-      location.getUserData(WikiXmlParser.KEY_COLUMN_NUMBER);
+      location.getUserData(XmlParser.KEY_COLUMN_NUMBER);
     final Object lineInfo =
-      location.getUserData(WikiXmlParser.KEY_LINE_NUMBER);
+      location.getUserData(XmlParser.KEY_LINE_NUMBER);
     final String strInputSource =
       inputSourceInfo != null ? "" + inputSourceInfo : "";
     final String strColumn = columnInfo != null ? "column " + columnInfo : "";

@@ -1,5 +1,5 @@
 /*
- * @(#)MarkDownParser.java 1.00 19/11/24
+ * @(#)MarkDownDocument.java 1.00 19/11/24
  *
  * Copyright (C) 2019 Jürgen Reuter
  *
@@ -19,11 +19,23 @@
 
 package org.soundpaint.respektomat;
 
-interface MarkDownParser
+import java.util.ArrayList;
+import java.util.List;
+
+public class MarkDownDocument extends MarkDownElement
 {
-  void parseDocument(final String title,
-                     final String revisionId,
-                     final String text);
+  private final List<MarkDownNode> children;
+
+  public MarkDownDocument()
+  {
+    super(null, MarkDownElement.Type.Root);
+    children = new ArrayList<MarkDownNode>();
+  }
+
+  public MarkDownElement createElement(final MarkDownElement.Type type)
+  {
+    return new MarkDownElement(document, type);
+  }
 }
 
 /*

@@ -56,6 +56,7 @@ tarball: distclean
 	TGZ_PREFIX=$$PROJECT_NAME\_$$TGZ_DATE ; cd .. ; \
 	tar cvf ./$$TGZ_PREFIX.tar.bz2 \
 		--exclude=untracked \
+		--exclude=.git \
 		--transform=s/$$PROJECT_PATH/$$TGZ_PREFIX/ \
 		--bzip2 $$PROJECT_PATH
 

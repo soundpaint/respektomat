@@ -25,10 +25,13 @@ public class Token implements Comparable<Token>
 {
   public enum Type {
     EOF,
+    APOSTROPHY,
     COMMA,
     SEMICOLON,
     COLON,
     DASH,
+    SLASH,
+    PERCENT,
     FULL_STOP,
     QUESTION_MARK,
     EXCLAMATION_MARK,
@@ -42,6 +45,10 @@ public class Token implements Comparable<Token>
 
   public static final Token EOF =
     new Token(Type.EOF, "", false, false);
+  public static final Token APOSTROPHY =
+    new Token(Type.APOSTROPHY, "’", false, false);
+  public static final Token AMPERSAND =
+    new Token(Type.APOSTROPHY, "&", true, true);
   public static final Token COMMA =
     new Token(Type.COMMA, ",", false, true);
   public static final Token SEMICOLON =
@@ -50,6 +57,10 @@ public class Token implements Comparable<Token>
     new Token(Type.COLON, ":", false, true);
   public static final Token DASH =
     new Token(Type.DASH, "–", true, true);
+  public static final Token SLASH =
+    new Token(Type.SLASH, "/", true, true);
+  public static final Token PERCENT =
+    new Token(Type.PERCENT, "%", true, true);
   public static final Token FULL_STOP =
     new Token(Type.FULL_STOP, ".", false, true);
   public static final Token QUESTION_MARK =

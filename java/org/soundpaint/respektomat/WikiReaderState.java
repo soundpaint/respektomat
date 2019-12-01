@@ -35,8 +35,8 @@ public class WikiReaderState
 
   private static class Rule
   {
-    private List<MatchStateChangeListener> listeners;
-    private String[] matchExpressions;
+    private final List<MatchStateChangeListener> listeners;
+    private final String[] matchExpressions;
     private int matching;
     private int mismatching;
 
@@ -180,46 +180,72 @@ public class WikiReaderState
     }
   }
 
-  private static final int MAX_PAGES_PROCESS = 10;
+  private static final boolean EXEC_WIKI_TEXT_PARSER = false;
+  private static final int MAX_PAGES_PROCESS = 100000;
 
-  private final List<MarkDownPageListener> listeners;
+  private final MarkDownParser markDownParser;
   private final Stack<String> elementPath;
   private final StringBuilder title;
   private final StringBuilder text;
   private final StringBuilder revisionId;
+  private final WikiTextParser wikiTextParser;
+  private final List<Rule> rules;
+  private int pageCount;
+  private int redirectCount;
+  private int skippedCount;
+  private int failedCount;
   private boolean inTitle;
   private boolean inText;
   private boolean inRevisionId;
   private Locator locator;
-  private List<Rule> rules;
-  private int pageCount;
+  private boolean isRedirect;
 
-  public WikiReaderState()
+  public WikiReaderState(final MarkDownParser markDownParser)
   {
-    listeners = new ArrayList<MarkDownPageListener>();
+    this.markDownParser = markDownParser;
     elementPath = new Stack<String>();
     title = new StringBuilder();
     text = new StringBuilder();
     revisionId = new StringBuilder();
-    inTitle = false;
-    inText = false;
-    inRevisionId = false;
-    locator = null;
+    wikiTextParser = new WikiTextParser(markDownParser);
     rules = new ArrayList<Rule>();
     for (final Rule rule : rulesDefinitions) {
       rules.add(rule);
     }
     pageCount = 0;
+    redirectCount = 0;
+    skippedCount = 0;
+    failedCount = 0;
+    reset();
   }
 
-  public void addListener(final MarkDownPageListener listener)
+  public void reset()
   {
-    listeners.add(listener);
+    inTitle = false;
+    inText = false;
+    inRevisionId = false;
+    locator = null;
+    isRedirect = false;
   }
 
   public int getPageCount()
   {
     return pageCount;
+  }
+
+  public int getRedirectCount()
+  {
+    return redirectCount;
+  }
+
+  public int getSkippedCount()
+  {
+    return skippedCount;
+  }
+
+  public int getFailedCount()
+  {
+    return failedCount;
   }
 
   public boolean inTitle()
@@ -252,11 +278,38 @@ public class WikiReaderState
     revisionId.append(s);
   }
 
-  private void notifyListeners()
+  private void parseText()
   {
-    for (final MarkDownPageListener listener : listeners) {
-      listener.handleMarkDownPage(title.toString(),
-                                  revisionId.toString(), text.toString());
+    try {
+      if (isRedirect) {
+        redirectCount++;
+      } else {
+        final boolean containsMath = text.toString().contains("<math>");
+        if (containsMath) {
+          skippedCount++;
+        } else {
+          if (EXEC_WIKI_TEXT_PARSER) {
+            try {
+              wikiTextParser.parseText(title.toString(),
+                                       revisionId.toString(),
+                                       text.toString());
+            } catch (final ParseException e) {
+              throw new RuntimeException("parser failed: " + e, e);
+            }
+          } else {
+            markDownParser.parseDocument(title.toString(),
+                                         revisionId.toString(),
+                                         text.toString());
+          }
+        }
+      }
+    } catch (final Throwable t) {
+      System.out.println("Parsing failed " +
+                         "while parsing document #" + getPageCount() +
+                         ", redirects: " + getRedirectCount() +
+                         ", skipped so far: " + getSkippedCount() +
+                         ": " + t);
+      failedCount++;
     }
   }
 
@@ -267,10 +320,15 @@ public class WikiReaderState
                  public void startMatching()
                  {
                    pageCount++;
+                   isRedirect = false;
                  }
                  public void stopMatching()
                  {
                    if (pageCount == MAX_PAGES_PROCESS) {
+                     System.out.println("processed: " + getPageCount());
+                     System.out.println("redirects: " + getRedirectCount());
+                     System.out.println("skipped: " + getSkippedCount());
+                     System.out.println("failed: " + getFailedCount());
                      System.exit(0);
                    }
                  }
@@ -287,6 +345,18 @@ public class WikiReaderState
                  public void stopMatching()
                  {
                    inTitle = false;
+                 }
+               }
+             }),
+    new Rule(new String[] {"mediawiki", "page", "redirect"},
+             new MatchStateChangeListener[] {
+               new MatchStateChangeListener() {
+                 public void startMatching()
+                 {
+                   isRedirect = true;
+                 }
+                 public void stopMatching()
+                 {
                  }
                }
              }),
@@ -316,7 +386,7 @@ public class WikiReaderState
                  public void stopMatching()
                  {
                    inText = false;
-                   notifyListeners();
+                   parseText();
                  }
                }
              })

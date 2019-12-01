@@ -80,8 +80,8 @@ public class Respektomat
   public Respektomat(final Tokenizer tokenizer)
     throws ParseException, IOException
   {
-    this(new Sentencizer(tokenizer,
-                         new SentenceFilter(Config.SENTENCE_FILTER)));
+    this(new SentencizerImpl(tokenizer,
+                             new SentenceFilter(Config.SENTENCE_FILTER)));
   }
 
   public Respektomat(final Sentencizer sentencizer)
@@ -171,7 +171,7 @@ public class Respektomat
         break;
       }
       final Sentence incompleteSentence =
-        Sentencizer.parseIncomplete(unparsedSentence);
+        SentencizerImpl.parseIncomplete(unparsedSentence);
       final Sentence continuedSentence =
         suggestContinuation(incompleteSentence);
       history.add(continuedSentence);

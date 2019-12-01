@@ -1,5 +1,5 @@
 /*
- * @(#)MarkDownParser.java 1.00 19/11/24
+ * @(#)MarkDownNode.java 1.00 19/11/24
  *
  * Copyright (C) 2019 Jürgen Reuter
  *
@@ -19,11 +19,14 @@
 
 package org.soundpaint.respektomat;
 
-interface MarkDownParser
+abstract class MarkDownNode
 {
-  void parseDocument(final String title,
-                     final String revisionId,
-                     final String text);
+  protected final MarkDownDocument document;
+
+  protected MarkDownNode(final MarkDownDocument document)
+  {
+    this.document = document != null ? document : (MarkDownDocument)this;
+  }
 }
 
 /*

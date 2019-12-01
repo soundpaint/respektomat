@@ -1,5 +1,5 @@
 /*
- * @(#)WikiReaderHandler.java 1.00 19/11/19
+ * @(#)WikiTextHandler.java 1.00 30/11/19
  *
  * Copyright (C) 2019 Jürgen Reuter
  *
@@ -26,21 +26,46 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class WikiReaderHandler extends DefaultHandler implements LexicalHandler
+public class WikiTextHandler extends DefaultHandler implements LexicalHandler
 {
-  private final WikiReaderState state;
+  private final MarkDownParser markDownParser;
+  private final StringBuilder characters;
+  private String title;
+  private String revisionId;
 
-  private WikiReaderHandler()
+  private WikiTextHandler()
   {
     throw new UnsupportedOperationException("unsupported default constructor");
   }
 
-  public WikiReaderHandler(final MarkDownParser markDownParser)
+  public WikiTextHandler(final MarkDownParser markDownParser)
   {
     if (markDownParser == null) {
       throw new NullPointerException("markDownParser");
     }
-    state = new WikiReaderState(markDownParser);
+    this.markDownParser = markDownParser;
+    characters = new StringBuilder();
+  }
+
+  public void setTitle(final String title)
+  {
+    if (title == null) {
+      throw new NullPointerException("title");
+    }
+    this.title = title;
+  }
+
+  public void setRevisionId(final String revisionId)
+  {
+    if (revisionId == null) {
+      throw new NullPointerException("revisionId");
+    }
+    this.revisionId = revisionId;
+  }
+
+  public String getCharacters()
+  {
+    return characters.toString();
   }
 
   @Override
@@ -70,19 +95,19 @@ public class WikiReaderHandler extends DefaultHandler implements LexicalHandler
   @Override
   public void setDocumentLocator(final Locator locator)
   {
-    state.setLocator(locator);
+    // nothing yet
   }
 
   @Override
   public void startDocument()
   {
-    // nothing yet
+    characters.setLength(0);
   }
 
   @Override
   public void endDocument()
   {
-    // nothing yet
+    markDownParser.parseDocument(title, revisionId, characters.toString());
   }
 
   @Override
@@ -103,7 +128,7 @@ public class WikiReaderHandler extends DefaultHandler implements LexicalHandler
                            final String qName,
                            final Attributes attributes)
   {
-    state.startElement(qName);
+    // strip off tags
   }
 
   @Override
@@ -111,32 +136,21 @@ public class WikiReaderHandler extends DefaultHandler implements LexicalHandler
                          final String qName)
     throws SAXParseException
   {
-    final String closingQName = state.endElement();
-    if (!closingQName.equals(qName)) {
-      throw new SAXParseException("element opening / closing mismatching: " +
-                                  qName + " vs. " + closingQName,
-                                  state.getLocator());
-    }
+    // strip off tags
   }
 
   @Override
   public void characters(final char ch[], final int start,
                          final int length)
   {
-    if (state.inTitle()) {
-      state.appendToTitle(new String(ch, start, length));
-    } else if (state.inRevisionId()) {
-      state.appendToRevisionId(new String(ch, start, length));
-    } else if (state.inText()) {
-      state.appendToText(new String(ch, start, length));
-    }
+    characters.append(new String(ch, start, length));
   }
 
   @Override
   public void ignorableWhitespace(final char ch[], final int start,
                                   final int length)
   {
-    final String data = new String(ch, start, length);
+    // strip off ignorable white space
   }
 
   @Override
@@ -213,7 +227,7 @@ public class WikiReaderHandler extends DefaultHandler implements LexicalHandler
                       final int start,
                       final int length)
   {
-    // nothing yet
+    // strip off comments
   }
 }
 

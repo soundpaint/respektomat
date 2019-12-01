@@ -1,5 +1,5 @@
 /*
- * @(#)MarkDownParser.java 1.00 19/11/24
+ * @(#)DummySentencizer.java 1.00 30/11/17
  *
  * Copyright (C) 2019 Jürgen Reuter
  *
@@ -19,11 +19,25 @@
 
 package org.soundpaint.respektomat;
 
-interface MarkDownParser
+import java.io.IOException;
+import java.text.ParseException;
+
+public class DummySentencizer implements Sentencizer
 {
-  void parseDocument(final String title,
-                     final String revisionId,
-                     final String text);
+  public void parseText(final String text)
+  {
+    System.out.println(text);
+  }
+
+  public boolean hasNext()
+  {
+    return false;
+  }
+
+  public Sentence getNext()
+  {
+    return Sentence.EOF;
+  }
 }
 
 /*

@@ -32,6 +32,7 @@ public class Tokenizer
   private final String resourceId;
   private final PushbackReader pushbackReader;
   private final Deque<Token> lookAhead;
+  private int pos;
 
   private Tokenizer()
   {
@@ -67,6 +68,7 @@ public class Tokenizer
     this.resourceId = resourceId;
     this.pushbackReader = pushbackReader;
     lookAhead = new ArrayDeque<Token>();
+    pos = 0;
   }
 
   private enum ParseState {
@@ -76,7 +78,7 @@ public class Tokenizer
     ERROR
   };
 
-  private boolean isWhiteSpace(final int ch)
+  private static boolean isWhiteSpace(final int ch)
   {
     return
       (ch == ' ') ||
@@ -85,7 +87,29 @@ public class Tokenizer
       (ch == '\n');
   }
 
-  private boolean isWordChar(final int ch)
+  private static boolean isOtherLanguageWordChar(final int ch)
+  {
+    return
+      (ch == 'à') ||
+      (ch == 'á') ||
+      (ch == 'ā') ||
+      (ch == 'ć') ||
+      (ch == 'ç') ||
+      (ch == 'è') ||
+      (ch == 'é') ||
+      (ch == 'ë') ||
+      (ch == 'ə') ||
+      (ch == 'Ģ') ||
+      (ch == 'í') ||
+      (ch == 'î') ||
+      (ch == 'ń') ||
+      (ch == 'ś') ||
+      (ch == 'ş') ||
+      (ch == 'ú') ||
+      (ch == '信');
+  }
+
+  private static boolean isWordChar(final int ch)
   {
     return
       ((ch >= '0') && (ch <= '9')) ||
@@ -98,16 +122,35 @@ public class Tokenizer
       (ch == 'ä') ||
       (ch == 'ö') ||
       (ch == 'ü') ||
-      (ch == 'ß');
+      (ch == 'ß') ||
+      isOtherLanguageWordChar(ch);
+  }
+
+  private void incrementPos(final int ch)
+  {
+    pos++;
+    if (ch >= 128) {
+      pos++;
+    }
+  }
+
+  private void decrementPos(final int ch)
+  {
+    pos--;
+    if (ch >= 128) {
+      pos--;
+    }
   }
 
   private void skipWhiteSpace() throws IOException
   {
     while (true) {
       final int ch = pushbackReader.read();
+      incrementPos(ch);
       if (ch == -1) break;
       if (!isWhiteSpace(ch)) {
         pushbackReader.unread(ch);
+        decrementPos(ch);
         break;
       }
     }
@@ -121,6 +164,7 @@ public class Tokenizer
     Token token = null;
     while (parseState != ParseState.STOP) {
       final int ch = pushbackReader.read();
+      incrementPos(ch);
       switch (parseState) {
       case START:
         switch (ch) {
@@ -131,6 +175,13 @@ public class Tokenizer
           break;
         case ',':
           token = Token.COMMA;
+          parseState = ParseState.STOP;
+          break;
+        case '’':
+          // ignore
+          break;
+        case '&':
+          token = Token.AMPERSAND;
           parseState = ParseState.STOP;
           break;
         case ';':
@@ -144,6 +195,14 @@ public class Tokenizer
         case '-':
         case '–':
           token = Token.DASH;
+          parseState = ParseState.STOP;
+          break;
+        case '/':
+          token = Token.SLASH;
+          parseState = ParseState.STOP;
+          break;
+        case '%':
+          token = Token.PERCENT;
           parseState = ParseState.STOP;
           break;
         case '.':
@@ -187,6 +246,7 @@ public class Tokenizer
             if (Config.DEBUG) {
               System.out.println("not a word char: " +
                                  (char)ch + "(" + ch + ")");
+              System.out.println("partial token read so far: " + wordText);
             }
             parseState = ParseState.ERROR;
           }
@@ -194,18 +254,22 @@ public class Tokenizer
         }
         break;
       case IN_WORD:
-        if (isWordChar(ch)) {
+        if (ch == '’') {
+          // ignore
+        } else if (isWordChar(ch)) {
           wordText.append((char)ch);
           // parseState keeps IN_WORD
         } else {
           token = Token.createWord(wordText.toString());
           pushbackReader.unread(ch);
+          decrementPos(ch);
           parseState = ParseState.STOP;
         }
         break;
       default:
-        throw new IllegalStateException("unexpected fall-through: " +
-                                        parseState);
+        throw new IllegalStateException("unexpected fall-through ar position " +
+                                        pos + "(" + Integer.toString(pos, 16) +
+                                        "): " + parseState);
       }
     }
     lookAhead.addFirst(token);

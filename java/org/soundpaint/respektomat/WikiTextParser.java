@@ -1,5 +1,5 @@
 /*
- * @(#)MarkDownPageListener.java 1.00 19/11/19
+ * @(#)WikiTextParser.java 1.00 30/11/19
  *
  * Copyright (C) 2019 Jürgen Reuter
  *
@@ -19,11 +19,31 @@
 
 package org.soundpaint.respektomat;
 
-public interface MarkDownPageListener
+import java.net.URL;
+import java.net.MalformedURLException;
+
+public class WikiTextParser
 {
-  void handleMarkDownPage(final String title,
-                          final String revisionId,
-                          final String text);
+  private WikiTextHandler handler;
+
+  private WikiTextParser()
+  {
+    throw new UnsupportedOperationException("unsupported default constructor");
+  }
+
+  public WikiTextParser(final MarkDownParser markDownParser)
+  {
+    handler = new WikiTextHandler(markDownParser);
+  }
+
+  public void parseText(final String title, final String revisionId,
+                        final String xmlFragment)
+    throws ParseException
+  {
+    handler.setTitle(title);
+    handler.setRevisionId(revisionId);
+    XmlParser.parse("<text>" + xmlFragment + "</text>", null, handler);
+  }
 }
 
 /*
