@@ -38,36 +38,26 @@ public class StringDistance
   {
     if (x == null) throw new NullPointerException("x");
     if (y == null) throw new NullPointerException("y");
-
-    /*
-    int xPos = 0;
-    int yPos = 0;
-    int score = 0;
-    while ((xPos < x.length()) && (yPos < y.length())) {
-      final char xChar = x.charAt(xPos);
-      final char yChar = y.charAt(yPos);
-      if (xChar == yChar) {
-        score++;
-        xPos++;
-        yPos++;
-      } else if (xChar < yChar) {
-        xPos++;
-      } else {
-        yPos++;
-      }
-    }
-    */
-
+    final int minLength = x.length() < y.length() ? x.length() : y.length();
+    final int maxLength = x.length() > y.length() ? x.length() : y.length();
     final String xN = normAndSort(x);
     final String yN = normAndSort(y);
     int xNPos = 0;
     int yNPos = 0;
     int scoreN = 0;
+    int lastXMatchPos = 0;
+    int lastYMatchPos = 0;
+    int totalShiftScore = 0;
     final StringBuilder commonN = new StringBuilder();
     while ((xNPos < xN.length()) && (yNPos < yN.length())) {
       final char xNChar = xN.charAt(xNPos);
       final char yNChar = yN.charAt(yNPos);
       if (xNChar == yNChar) {
+        final int shiftScore =
+          (xNPos - lastXMatchPos) - (yNPos - lastYMatchPos);
+        totalShiftScore += Math.abs(shiftScore);
+        lastXMatchPos = xNPos;
+        lastYMatchPos = yNPos;
         scoreN++;
         xNPos++;
         yNPos++;
@@ -78,43 +68,9 @@ public class StringDistance
         yNPos++;
       }
     }
-    final int minLength = x.length() < y.length() ? x.length() : y.length();
-    final int maxLength = x.length() > y.length() ? x.length() : y.length();
-
-    if (Config.DEBUG) {
-      System.out.println(minLength * maxLength * scoreN + ": " + x + " | " + y);
-      System.out.println("common: " + commonN);
-    }
-
-    /*
-     * TODO: Idea: Track together with commonN which positions (for
-     * strings x and y, respectively) these characters originate from,
-     * e.g.  for x="Koalitionsregierung", y="Regierung",
-     * commonN="eegginrru", and compute position deltas δ:
-     *
-     * e -> x[11], y[1]
-     * δ:     +3    +3    (ok)
-     * e -> x[14], y[4]
-     * δ:     -2    -2    (ok)
-     * g -> x[12], y[2]
-     * δ:     +6    +6    (ok)
-     * g -> x[18], y[8]
-     * δ:    -14    -5    (not ok)
-     * i ->  x[4], y[3]
-     * δ:     +4    +4    (ok)
-     * n ->  x[8], y[7]
-     * δ:     +2    -7    (not ok)
-     * r -> x[10], y[0]
-     * δ:     +5    +5    (ok)
-     * r -> x[15], y[5]
-     * δ:     +1    +1    (ok)
-     * u -> x[16], y[6]
-     *
-     * => deltas differ only in 2 of 8 places
-     * => assume (at least) 6 chars match in the correct order
-     * => consider this value as score
-     */
-    return minLength * maxLength * scoreN;
+    final double score = scoreN * 2.0 / (minLength + maxLength) *
+      (1.0 - totalShiftScore * 1.0 / maxLength);
+    return score >= 0.5 ? score : 0.0;
   }
 
   private static void test(final String x, final String y)
