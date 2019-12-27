@@ -96,8 +96,10 @@ public class Respektomat
     }
     if (Config.DEBUG) {
       System.out.println("summary of index:");
-      System.out.println("#sentences: " + sentences.size());
       System.out.println(index.createSummary());
+      System.out.println("#sentences: " + sentences.size());
+      System.out.println("press <enter> to continue...");
+      System.console().readLine();
     }
     history = new History();
   }
