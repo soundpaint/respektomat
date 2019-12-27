@@ -48,11 +48,12 @@ public class SentenceFilter
 
   public boolean accept(final Sentence sentence)
   {
+    final String acceptedTokenValue = token.getValue().toLowerCase();
     for (final Token token : sentence.getTokens()) {
-      if (token.equals(this.token)) {
+      if (token.getValue().toLowerCase().indexOf(acceptedTokenValue) >= 0) {
         return true;
       } else if (Config.DEBUG) {
-        System.out.println(token + " != " + this.token);
+        System.out.println(token + " does not contain " + this.token);
       }
     }
     return false;
