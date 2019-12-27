@@ -87,6 +87,11 @@ public class Tokenizer
       (ch == '\n');
   }
 
+  private static boolean isDigit(final int ch)
+  {
+    return (ch >= '0') && (ch <= '9');
+  }
+
   private static boolean isOtherLanguageWordChar(final int ch)
   {
     return
@@ -123,7 +128,8 @@ public class Tokenizer
       (ch == 'ö') ||
       (ch == 'ü') ||
       (ch == 'ß') ||
-      isOtherLanguageWordChar(ch);
+      isOtherLanguageWordChar(ch) ||
+      isDigit(ch);
   }
 
   private void incrementPos(final int ch)
