@@ -88,6 +88,11 @@ public class Sentence implements Comparable<Sentence>
     return tokens;
   }
 
+  public int getTokensCount()
+  {
+    return tokens.size();
+  }
+
   @Override
   public int compareTo(final Sentence other)
   {

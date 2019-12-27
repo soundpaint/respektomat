@@ -112,16 +112,19 @@ public class Respektomat
     if (incompleteSentence == null) {
        score += (sentence.getCategory() == category) ? 1e5 : -1e5;
     } else {
+      final double tokenRelevance = 1.0 / sentence.getTokensCount();
       for (final Token token : incompleteSentence.getTokens()) {
         for (final Token indexedToken : index.getTokens()) {
-          final double tokenScore = token.matchScore(indexedToken);
+          final double tokenScore =
+            token.matchScore(indexedToken) * token.getValue().length();
           if (tokenScore != 0.0) {
             final IndexForToken indexForToken =
               index.getIndexForToken(indexedToken);
             final IndexForTokenInSentence indexForTokenInSentence =
               indexForToken.getIndexForTokenInSentence(sentence);
             if (indexForTokenInSentence != null) {
-              score += tokenScore * indexForTokenInSentence.count();
+              score +=
+                tokenScore * tokenRelevance * indexForTokenInSentence.count();
             }
           }
         }
