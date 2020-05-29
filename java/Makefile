@@ -39,7 +39,7 @@ jar: $(JAR_OBJ)
 
 $(JAR_OBJ): $(JAR_DIR) $(JAVA_OBJ)
 	cd $(BUILD_DIR); \
-	#jar -0cvfm $(JAR_DIR)/Respektomat.jar $(JAVA_DIR)/META-INF/MANIFEST.MF .
+	jar -0cvfm $(JAR_DIR)/Respektomat.jar $(JAVA_DIR)/META-INF/MANIFEST.MF .
 
 depend:
 

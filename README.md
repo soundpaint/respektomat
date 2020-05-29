@@ -11,7 +11,7 @@ processor.  Still, there are some significant differences:
 
 * While »ELIZA« uses a setting with psychotherapist to talk to, the
   »Respektomat« is rather an interactive information system and talk
-  bot on the specific topic of "respect".
+  bot on the specific topic of “respect”.
 
 * While »ELIZA« tries in many cases to create sentences by pattern
   matching and replacing from the user's input, »Respektomat« instead
@@ -24,14 +24,24 @@ processor.  Still, there are some significant differences:
   but should be portable to other languages with minimal effort.
   Note, for example, that »ELIZA« depends on constructing subclauses
   from a main clause.  In English language, this is relatively easy.
-  For example, you can take the main clause "today it is raining" and
-  turning it into a subclause by prepending e.g. the word "if": "if
-  today it is raining, then …".  In German language, this is not
+  For example, you can take the main clause “today it is raining” and
+  turning it into a subclause by prepending e.g. the word “if”: “if
+  today it is raining, then …”.  In German language, this is not
   directly possible, but the sentence must be rephrased.  For example,
-  the main clause "heute regnet es", it must be rephrased as "falls es
-  heute regnet, dann …" when prepending the conditional word "falls".
+  the main clause “heute regnet es”, it must be rephrased as “falls es
+  heute regnet, dann …” (instead of “falls heute regnet es, dann …”)
+  when prepending the conditional word “falls”.  To avoid this
+  trouble, »Respektomat« does not at all try to construct a new
+  sentence from scratch as answer, but instead tries selecting the
+  best fitting sentence from a database with a huge, fixed set of
+  predefined sentences and uses that best match as answer.
 
-== Bibliography ==
+![Fig. 1: Screenshot of Typical
+Conversation](doc/screenshots/screenshot_0001.png)
+
+Fig. 1: Screenshot of Typical Conversation
+
+## Bibliography
 
 [1] Wikipedia: _ELIZA_.  URL: https://en.wikipedia.org/wiki/ELIZA
 (last visited on: 2019-11-17).
